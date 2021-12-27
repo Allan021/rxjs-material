@@ -1,4 +1,12 @@
-import { BehaviorSubject, map } from "rxjs";
+import {
+  BehaviorSubject,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  switchMap,
+  tap,
+} from "rxjs";
 import { Pokemon } from "../models/Pokemon";
 
 const SimplePokemon$ = new BehaviorSubject<Pokemon[]>([]);
@@ -21,3 +29,19 @@ export const pokemonWithPower$ = SimplePokemon$.pipe(
     })),
   ])
 );
+
+export const searchSubject$ = new BehaviorSubject("");
+export const pokemonFilteredSubject$ = searchSubject$.pipe(
+  debounceTime(750),
+  distinctUntilChanged(),
+  tap((val) => console.log(val)),
+  switchMap((searchTerm) =>
+    pokemonWithPower$.pipe(
+      map((p) =>
+        p.filter((pokemon) => pokemon.name.toLowerCase().includes(searchTerm))
+      )
+    )
+  )
+);
+
+export const Selected = new BehaviorSubject<number[]>([]);

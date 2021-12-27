@@ -1,15 +1,11 @@
 import { SearchRounded } from "@mui/icons-material";
 import { IconButton, InputBase, Paper } from "@mui/material";
-import { useEffect } from "react";
-import { pokemonWithPower$ } from "./store/observables";
-export const Search = () => {
-  useEffect(() => {
-    const subs = pokemonWithPower$.subscribe(console.log);
+import { useState } from "react";
 
-    return () => {
-      subs.unsubscribe();
-    };
-  }, []);
+import { searchSubject$ } from "./store/observables";
+
+export const Search = () => {
+  const [search, setSearch] = useState<string>("");
 
   return (
     <Paper
@@ -19,7 +15,12 @@ export const Search = () => {
       <InputBase
         sx={{ ml: 1, flex: 1 }}
         placeholder="Search Your Favorite Pokemon"
-        inputProps={{ "aria-label": "search google maps" }}
+        inputProps={{ "aria-label": "Search Pokemon" }}
+        onChange={(e) => {
+          const value = e.target.value;
+          setSearch(value);
+          searchSubject$.next(value);
+        }}
       />
       <IconButton type="submit" sx={{ p: "10px" }} aria-label="search">
         <SearchRounded />
