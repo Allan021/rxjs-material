@@ -1,5 +1,6 @@
 import {
   BehaviorSubject,
+  combineLatestWith,
   debounceTime,
   distinctUntilChanged,
   filter,
@@ -35,13 +36,24 @@ export const pokemonFilteredSubject$ = searchSubject$.pipe(
   debounceTime(750),
   distinctUntilChanged(),
   tap((val) => console.log(val)),
-  switchMap((searchTerm) =>
-    pokemonWithPower$.pipe(
-      map((p) =>
-        p.filter((pokemon) => pokemon.name.toLowerCase().includes(searchTerm))
-      )
-    )
+  combineLatestWith(pokemonWithPower$),
+  map(([search, pokemon]) =>
+    pokemon.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
   )
 );
 
-export const Selected = new BehaviorSubject<number[]>([]);
+export const Selected$ = new BehaviorSubject<number[]>([]);
+
+export const Pokemons$ = pokemonFilteredSubject$.pipe(
+  combineLatestWith(Selected$),
+  map(([pokemon, selected]) =>
+    pokemon.map((p) => ({
+      ...p,
+      selected: selected.includes(p.id),
+    }))
+  )
+);
+
+export const Deck$ = Pokemons$.pipe(
+  map((pokemon) => pokemon.filter((p) => p.selected))
+);

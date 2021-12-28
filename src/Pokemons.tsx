@@ -3,14 +3,18 @@ import { Checkbox, FormControlLabel, Grid, Paper } from "@mui/material";
 import { useState } from "react";
 import { useObservable } from "./hooks/useObservable";
 import { Pokemon } from "./models/Pokemon";
-import { pokemonFilteredSubject$ } from "./store/observables";
+import {
+  pokemonFilteredSubject$,
+  Pokemons$,
+  Selected$,
+} from "./store/observables";
 import { useStyles } from "./styles";
 
 export const Pokemons = () => {
   const classes = useStyles();
   const [pokemons, setPokemons] = useState<Pokemon[]>([]);
-  useObservable(pokemonFilteredSubject$, setPokemons);
-  console.log(pokemons);
+  useObservable(Pokemons$, setPokemons);
+
   return (
     <Grid container gap={2} style={{ paddingTop: "1rem" }}>
       {pokemons.length > 0 &&
@@ -21,7 +25,17 @@ export const Pokemons = () => {
                 control={
                   <Checkbox
                     icon={<FavoriteBorder />}
+                    checked={Selected$.value.includes(p.id)}
                     checkedIcon={<Favorite />}
+                    onChange={() => {
+                      if (Selected$.value.includes(p.id)) {
+                        Selected$.next(
+                          Selected$.value.filter((id) => id !== p.id)
+                        );
+                      } else {
+                        Selected$.next([...Selected$.value, p.id]);
+                      }
+                    }}
                   />
                 }
                 label={p.name}
